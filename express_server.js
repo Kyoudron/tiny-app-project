@@ -9,9 +9,15 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.set("view engine", "ejs");
 
-// funtion generateRandomString() {
+function generateRandomString(length, sixChars) {
+  var result = '';
+  for (var i = length; i > 0; --i)
+    result += sixChars[Math.floor(Math.random() * sixChars.length)];
+  return result
+}
 
-// }
+var randomString = generateRandomString(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
+
 
   var urlDatabase = {
     "b2xVn2": "http://www.lighthouselabs.ca",
@@ -22,6 +28,19 @@ app.set("view engine", "ejs");
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
+});
+
+
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
+app.post("/urls", (req, res) => {
+  console.log(req.body);
+  let shortURL = randomString;
+  urlDatabase[shortURL] = req.body.longURL
+                                              // debug statement to see POST parameters
+  res.redirect(`urls/${shortURL}`);         // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -38,15 +57,6 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
-});
-
-app.post("/urls", (req, res) => {
-  console.log(req.body);  // debug statement to see POST parameters
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
-});
 
 
 
