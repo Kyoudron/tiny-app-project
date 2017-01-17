@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>TinyApp</title>
+</head>
+<body>
+  Hello World
+  <ul>
+    <% for(shortURL in urls) { %>
+      <li><%= shortURL %></li>
+      <li><%= urls[shortURL] %></li>
+    <% } %>
+
+    <!-- Dead Link Here -->
+
+  </ul>
+  Dead Link here
+</body>
+</html>
