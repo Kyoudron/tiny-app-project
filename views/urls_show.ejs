@@ -5,8 +5,12 @@
 </head>
 <body>
   <ul>
-    <li><%= shortURL %></li>
-    <li><%= longURL %></li>
+    <b style="font-size:36px;"><%= `Short URL is: ${shortURL}` %></b>
+    <b><%= longURL %></b>
+      <form action="/urls/<%=shortURL%>/update" method="POST" style="margin:50px;">
+        <strong for="longURL">Enter Website Here!</strong>
+        <input id="longURL" type="text" name="longURL" placeholder="<%= `${longURL}`%>"" style="width: 300px">
+        <input type="submit" value="Update">
   </ul>
 </body>
 </html>

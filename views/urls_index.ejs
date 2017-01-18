@@ -6,13 +6,22 @@
 <body>
   <ul>
     <% for(shortURL in urls) { %>
-      <p><%= shortURL + " --> " + urls[shortURL] %></p>
-      <form method="POST" action="/urls/:id/delete"</form>
+      <p><%= shortURL + " --> " %> <a href="<%= `/u/${shortURL}` %>"><%= urls[shortURL] %></a></p>
+
+
+      <form method="POST" action="/urls/:id">
+        <a href="<%= `/urls/${shortURL}` %>"> Edit </a>
+      </form>
+
+
+      <form method="POST" action="/urls/<%=shortURL%>/delete">
         <strong for="longURL">Would you like to Delete?:</strong>
         <input type="submit" value="Delete">
+
     <% } %>
 
   </ul>
 </form>
 </body>
 </html>
+

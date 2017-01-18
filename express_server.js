@@ -33,11 +33,13 @@ app.get("/urls", (req, res) => {
 
 app.post("/urls/:id/delete", (req, res) => {
   // console.log(delete urls)
-  delete urlDatabase[shortURL]
+  // console.log(shortURL);
+  var key = req.params.id
+  delete urlDatabase[key]
   res.redirect(`/urls`)
 })
 
-
+//
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
@@ -61,6 +63,12 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.post("/urls/:id/update", (req, res) =>{
+  var shortURL = req.params.id
+  var longURL = req.body.longURL
+  urlDatabase[shortURL] = longURL;
+  res.redirect(`/urls/${shortURL}`);
+});
 //
 
 
