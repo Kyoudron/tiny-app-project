@@ -32,9 +32,9 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  // delete shortURL
-  // delete urls[shortURL]
-  res.redirect(`urls/`)
+  // console.log(delete urls)
+  delete urlDatabase[shortURL]
+  res.redirect(`/urls`)
 })
 
 
