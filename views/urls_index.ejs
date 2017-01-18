@@ -6,7 +6,7 @@
 <body>
   <ul>
     <% for(shortURL in urls) { %>
-      <p><%= shortURL + " --> " %> <a href="<%= `/u/${shortURL}` %>"><%= urls[shortURL] %></a></p>
+      <p><%= shortURL + " " %> &#8594; <a href="<%= `/u/${shortURL}` %>"><%= urls[shortURL] %></a></p>
 
 
       <form method="POST" action="/urls/:id">

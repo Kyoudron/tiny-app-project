@@ -16,7 +16,7 @@ function generateRandomString(length, sixChars) {
   return result
 }
 
-var randomString = generateRandomString(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
+// var randomString = generateRandomString(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
 
 
 var urlDatabase = {
@@ -47,7 +47,7 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);
-  let shortURL = randomString;
+  let shortURL = generateRandomString(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
   urlDatabase[shortURL] = req.body.longURL
                                               // debug statement to see POST parameters
   res.redirect(`urls/${shortURL}`);         // Respond with 'Ok' (we will replace this)
