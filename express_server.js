@@ -4,10 +4,10 @@ var app = express();
 
 var PORT = process.env.PORT || 8080; // default port 8080
 
+app.set("view engine", "ejs");
+
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
-
-app.set("view engine", "ejs");
 
 function generateRandomString(length, sixChars) {
   var result = '';
@@ -19,16 +19,24 @@ function generateRandomString(length, sixChars) {
 var randomString = generateRandomString(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
 
 
-  var urlDatabase = {
-    "b2xVn2": "http://www.lighthouselabs.ca",
-    "9sm5xK": "http://www.google.com",
-    "g3dPs9": "http://reddit.com"
-  };
+var urlDatabase = {
+  "b2xVn2": "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com",
+};
+
+//
 
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
+
+app.post("/urls/:id/delete", (req, res) => {
+  // delete shortURL
+  // delete urls[shortURL]
+  res.redirect(`urls/`)
+})
+
 
 
 app.get("/urls/new", (req, res) => {
@@ -43,6 +51,8 @@ app.post("/urls", (req, res) => {
   res.redirect(`urls/${shortURL}`);         // Respond with 'Ok' (we will replace this)
 });
 
+//
+
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
@@ -51,6 +61,8 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+//
+
 
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL]
@@ -58,20 +70,25 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 
+//
+
+// app.use(function(req, res){
+//   res.status(404).send("Sorry, not found!");
+// });
 
 
 
-app.get("/", (req, res) => {
-  res.end("Hello!");
-});
+// app.get("/", (req, res) => {
+//   res.end("Hello!");
+// });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
+// app.get("/urls.json", (req, res) => {
+//   res.json(urlDatabase);
+// });
 
-app.get("/hello", (req, res) => {
-  res.end("<html><body>Hello <b>World</b></body></html>\n");
-});
+// app.get("/hello", (req, res) => {
+//   res.end("<html><body>Hello <b>World</b></body></html>\n");
+// });
 
 
 app.listen(PORT, () => {

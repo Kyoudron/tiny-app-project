@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>TinyApp</title>
+  <title> <%= include('./partials/_header') %> </title>
 </head>
 <body>
-  Hello World
   <ul>
     <% for(shortURL in urls) { %>
-      <li><%= shortURL %></li>
-      <li><%= urls[shortURL] %></li>
+      <p><%= shortURL + " --> " + urls[shortURL] %></p>
+      <form method="POST" action="/urls/:id/delete"</form>
+        <strong for="longURL">Would you like to Delete?:</strong>
+        <input type="submit" value="Delete">
     <% } %>
 
-    <!-- Dead Link Here -->
-
   </ul>
-  Dead Link here
+</form>
 </body>
 </html>
