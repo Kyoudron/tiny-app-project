@@ -2,12 +2,18 @@
 Tiny App!
 </title>
 
+<% if(username) { %>
+  Welcome <%= username %>
+  <form method="POST" action="/logout">
+    <input type="Submit" value="Log-out">
+  </form>
 
+<% } else { %>
 
-<form method="POST" action=/login>
-  Username: <br>
-    <input type="text" name="username"><br>
-    <input type="Submit" value="Sign In">
-</form>
+  <form method="POST" action=/login>
+    Username: <br>
+      <input type="text" name="username" placeholder="Username">
+      <input type="Submit" value="Sign In">
+  </form>
 
-<form method="POST" action="/logout">
+<% } %>
