@@ -10,10 +10,10 @@ Tiny App!
 
 <% } else { %>
 
-  <form method="POST" action=/login>
-    Username: <br>
-      <input type="text" name="username" placeholder="Username">
-      <input type="Submit" value="Sign In">
+  <form method="POST" action=/urls>
+      <a href="<%= `/login` %>"> Sign In </a>
   </form>
+  <form method="POST" action=/register>
+      <a href="<%= `/register` %>"> Register here </a>
 
 <% } %>
