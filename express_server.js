@@ -1,6 +1,10 @@
 const express = require("express");
 const cookieParser = require("cookie-parser")
 const bodyParser = require("body-parser");
+const bcrypt = require('bcrypt');
+// const password = "purple-monkey-dinosaur"; // you will probably this from req.params
+// const hashed_password = bcrypt.hashSync(password, 10);
+
 
 const PORT = process.env.PORT || 8080; // default port 8080
 
@@ -36,7 +40,7 @@ var urlDatabase = {
 var userDatabase = {
     id: {
       id: generateRandomID(4, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'),
-      email: "kapish.k.1@gmail.com",
+      email: "lighthouseguy@gmail.com",
       password: "lighthouselabs"
   }
 }
@@ -48,31 +52,35 @@ app.get("/register", (req, res)=> {
 });
 
 app.post("/register", (req, res) => {
-  let userExists = false
-  let randomID = (generateRandomID(4, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+  let userExists = false;
+  let lengthOfPassword = 10;
+  let addUserEmail = req.body.body;
+  let addUserPassword = bcrypt.hashSync(req.body.password, lengthOfPassword);
+  let randomID = (generateRandomID(4, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'));
+  console.log(addUserPassword)
 
-for (var newUserVar in userDatabase) {
-  if (userDatabase[newUserVar].email === req.body.email) {
+  for (var newUserVar in userDatabase) {
+    if (userDatabase[newUserVar].email === req.body.email) {
     // console.log("it matched")
-    userExists = true
-  }
-}
+      userExists = true
+                                                           }
+                                        }
   if (userExists) {
     res.status(400).send("Email user already exists!")
 
   } else if (req.body.email === "" || req.body.password === "") {
   res.status(400).send("Email and/or password were left blank")
 
-} else {
-  res.cookie("userEmail", req.body.email)
-  const newUser = {
-    id: randomID,
-    email: req.body.email,
-    password: req.body.password,
-    }
-    userDatabase[randomID] = newUser
-    res.redirect("/urls")
-  }
+  } else {
+    res.cookie("userEmail", req.body.email)
+    const newUser = {
+      id: randomID,
+      email: req.body.email,
+      password: addUserPassword,
+                    }
+      userDatabase[randomID] = newUser
+      res.redirect("/urls")
+          };
 })
 
 //
@@ -104,23 +112,29 @@ app.get("/login", (req, res) => {
 
 
 app.post("/login", (req, res) => {
-  let foundUser = null
+    console.log(userDatabase)
+  let userLoginID = req.body.email
+  let userLoginPassword = req.body.password
   for(let userID in userDatabase) {
-    if (userDatabase[userID].email === req.body.email) {
-      foundUser = userDatabase[userID];
-      break;
+    // when emails match
+    if (userDatabase[userID].email === userLoginID) {
+      console.log(userLoginID)
+        console.log(userLoginPassword)
+        console.log(userDatabase[userID].password)
+      // when passwords match
+      if (bcrypt.compareSync(userLoginPassword, userDatabase[userID].password)) {
+        res.cookie("user_id", req.body.email)
+        res.redirect(`/urls`)
+        return
+      } else {
+        return res.status(403).send("not the right password")
+      }
     }
   }
-  if(!foundUser) {
     return res.status(403).send("User not found");
-  }
-  if(foundUser.password !== req.body.password){
-    return res.status(403).send("Not the right password :(")
-  }
-  res.cookie("user_id", req.body.email)
-  res.redirect(`/urls`)
 });
 
+//
 
 app.post("/logout", (req, res) =>{
   res.clearCookie("username")
