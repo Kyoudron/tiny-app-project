@@ -22,11 +22,12 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
 
-function generateRandomString(length, sixChars) {
-  var result = '';
-  for (var i = length; i > 0; --i)
-    result += sixChars[Math.floor(Math.random() * sixChars.length)];
-  return result
+function generateRandomString() {
+   var text = "";
+   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+   for( var i=0; i < 6; i++ )
+       text += possible.charAt(Math.floor(Math.random() * possible.length));
+   return text;
 }
 
 function generateRandomID(length, allID) {
@@ -142,9 +143,6 @@ app.post("/logout", (req, res) =>{
 //
 
 app.get("/urls/new", (req, res) => {
-  // let templateVars = {
-  //   username: req.session.user_id
-  // };
   res.render("urls_new");
 });
 
@@ -152,8 +150,10 @@ app.post("/urls", (req, res) => {
   for (randomUserID in userDatabase) {
     if(req.session.user_id === userDatabase[randomUserID].id) {
     // console.log(userDatabase[randomUserID].id)
-    userDatabase[randomUserID].newUrls[generateRandomID(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')] = req.body.longURL
-    // console.log(userDatabase)
+    let shortURL = generateRandomString()
+    userDatabase[randomUserID].newUrls[shortURL]
+    userDatabase[randomUserID].newUrls[shortURL] = req.body.longURL
+    // userDatabase[randomUserID].newUrls
     }
   }
   res.redirect(`/urls`);
@@ -164,7 +164,7 @@ app.post("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    longURL: userDatabase[req.session.user_id].newUrls[shortURL],
     username: req.session.user_id
   };
   res.render("urls_show", templateVars);
@@ -173,7 +173,7 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls/:id/update", (req, res) =>{
   var shortURL = req.params.id
   var longURL = req.body.longURL
-  urlDatabase[shortURL] = longURL;
+  userDatabase[req.session.user_id].newUrls[shortURL] = longURL;
   res.redirect(`/urls`);
 });
 
@@ -183,7 +183,7 @@ app.post("/urls/:id/update", (req, res) =>{
 
 
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL]
+  let longURL = userDatabase[req.session.user_id].newUrls[req.params.shortURL]
   res.redirect(longURL);
 });
 
