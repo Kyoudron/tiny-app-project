@@ -37,8 +37,8 @@ function generateRandomID(length, allID) {
 }
 
 var urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+  // "b2xVn2": "http://www.lighthouselabs.ca",
+  // "9sm5xK": "http://www.google.com",
 };
 
 // let randomID = generateRandomID(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
@@ -62,14 +62,12 @@ app.post("/register", (req, res) => {
   let addUserPassword = bcrypt.hashSync(req.body.password, lengthOfPassword);
   let randomID = (generateRandomID(4, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'));
   console.log(addUserPassword)
-
   for (var newUserVar in userDatabase) {
     if (userDatabase[newUserVar].email === req.body.email) {
     // console.log("it matched")
       userExists = true
     }
   }
-
   if (userExists) {
     res.status(400).send("Email user already exists!")
   } else if (req.body.email === "" || req.body.password === "") {
@@ -80,10 +78,12 @@ app.post("/register", (req, res) => {
         id: randomID,
         email: req.body.email,
         password: addUserPassword,
+        newUrls: {}
       };
       userDatabase[randomID] = newUser
+      console.log(userDatabase)
       res.redirect("/urls")
-      };
+    };
 })
 
 //
@@ -103,8 +103,6 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 //
-
-
 
 
 app.get("/login", (req, res) => {
@@ -128,7 +126,7 @@ app.post("/login", (req, res) => {
         res.redirect(`/urls`)
         return
       } else {
-        return res.status(403).send("not the right password")
+        return res.status(403).send("Not the right password!")
       }
     }
   }
@@ -145,19 +143,23 @@ app.post("/logout", (req, res) =>{
 //
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = {
-    username: req.session.user_id
-  };
-  res.render("urls_new", templateVars);
-
+  // let templateVars = {
+  //   username: req.session.user_id
+  // };
+  res.render("urls_new");
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);
-  let shortURL = generateRandomString(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
-  urlDatabase[shortURL] = req.body.longURL
-                                              // debug statement to see POST parameters
-  res.redirect(`urls/${shortURL}`);         // Respond with 'Ok' (we will replace this)
+  // console.log(req.body);
+  // console.log(req.session.user_id)
+  for (randomUserID in userDatabase) {
+    if(req.session.user_id === userDatabase[randomUserID].email) {
+    // console.log(userDatabase[randomUserID].id)
+    userDatabase[randomUserID].newUrls[generateRandomID(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')] = req.body.longURL
+    // console.log(userDatabase)
+    }
+  }
+  res.redirect(`/urls`);
 });
 
 //
@@ -175,7 +177,7 @@ app.post("/urls/:id/update", (req, res) =>{
   var shortURL = req.params.id
   var longURL = req.body.longURL
   urlDatabase[shortURL] = longURL;
-  res.redirect(`/urls/${shortURL}`);
+  res.redirect(`/urls`);
 });
 
 
@@ -193,15 +195,6 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/", (req, res) => {
   res.end("Hello!");
 });
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.end("<html><body>Hello <b>World</b></body></html>\n");
-});
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
