@@ -6,10 +6,11 @@ Tiny App!
   Welcome <%= username %>
   <form method="POST" action="/logout">
     <input type="Submit" value="Log-out">
+    <p> <a href="<%= `/urls/new` %>"> Create a link! </a></p>
   </form>
 
 <% } else { %>
-
+  Welcome to my site!
   <form method="POST" action=/urls>
       <a href="<%= `/login` %>"> Sign In </a>
   </form>

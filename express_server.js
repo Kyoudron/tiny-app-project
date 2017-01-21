@@ -1,5 +1,5 @@
 const express = require("express");
-const cookieParser = require("cookie-parser")
+const cookieSession = require("cookie-session");
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
 // const password = "purple-monkey-dinosaur"; // you will probably this from req.params
@@ -9,7 +9,12 @@ const bcrypt = require('bcrypt');
 const PORT = process.env.PORT || 8080; // default port 8080
 
 const app = express();
-app.use(cookieParser())
+app.use(cookieSession({
+  name: "session",
+  keys: ["secretkeysinhere"],
+  // options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
 
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -54,7 +59,6 @@ app.get("/register", (req, res)=> {
 app.post("/register", (req, res) => {
   let userExists = false;
   let lengthOfPassword = 10;
-  let addUserEmail = req.body.body;
   let addUserPassword = bcrypt.hashSync(req.body.password, lengthOfPassword);
   let randomID = (generateRandomID(4, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'));
   console.log(addUserPassword)
@@ -63,24 +67,23 @@ app.post("/register", (req, res) => {
     if (userDatabase[newUserVar].email === req.body.email) {
     // console.log("it matched")
       userExists = true
-                                                           }
-                                        }
+    }
+  }
+
   if (userExists) {
     res.status(400).send("Email user already exists!")
-
   } else if (req.body.email === "" || req.body.password === "") {
-  res.status(400).send("Email and/or password were left blank")
-
-  } else {
-    res.cookie("userEmail", req.body.email)
-    const newUser = {
-      id: randomID,
-      email: req.body.email,
-      password: addUserPassword,
-                    }
+    res.status(400).send("Email and/or password were left blank")
+    } else {
+      req.session.user_id = req.body.email
+      const newUser = {
+        id: randomID,
+        email: req.body.email,
+        password: addUserPassword,
+      };
       userDatabase[randomID] = newUser
       res.redirect("/urls")
-          };
+      };
 })
 
 //
@@ -88,13 +91,12 @@ app.post("/register", (req, res) => {
 app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"],
+    username: req.session.user_id
    };
   res.render("urls_index", templateVars);
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-
   var key = req.params.id
   delete urlDatabase[key]
   res.redirect(`/urls`)
@@ -106,13 +108,12 @@ app.post("/urls/:id/delete", (req, res) => {
 
 
 app.get("/login", (req, res) => {
-  res.cookie("username", req.body.username)
   res.render("urls_login")
 })
 
 
 app.post("/login", (req, res) => {
-    console.log(userDatabase)
+  console.log(userDatabase)
   let userLoginID = req.body.email
   let userLoginPassword = req.body.password
   for(let userID in userDatabase) {
@@ -123,7 +124,7 @@ app.post("/login", (req, res) => {
         console.log(userDatabase[userID].password)
       // when passwords match
       if (bcrypt.compareSync(userLoginPassword, userDatabase[userID].password)) {
-        res.cookie("user_id", req.body.email)
+        req.session.user_id = userLoginID
         res.redirect(`/urls`)
         return
       } else {
@@ -137,17 +138,16 @@ app.post("/login", (req, res) => {
 //
 
 app.post("/logout", (req, res) =>{
-  res.clearCookie("username")
-  res.redirect("/urls")
+  req.session = null
+  res.redirect("/login")
 });
 
 //
 
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-  username: req.cookies["username"]
+    username: req.session.user_id
   };
-
   res.render("urls_new", templateVars);
 
 });
@@ -166,7 +166,7 @@ app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id],
-    username: req.cookies["username"]
+    username: req.session.user_id
   };
   res.render("urls_show", templateVars);
 });
