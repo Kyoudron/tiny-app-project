@@ -37,17 +37,18 @@ function generateRandomID(length, allID) {
 }
 
 var urlDatabase = {
-  // "b2xVn2": "http://www.lighthouselabs.ca",
-  // "9sm5xK": "http://www.google.com",
+  "b2xVn2": "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com",
 };
 
 // let randomID = generateRandomID(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
 var userDatabase = {
-    id: {
-      id: generateRandomID(4, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'),
-      email: "lighthouseguy@gmail.com",
-      password: "lighthouselabs"
-  }
+  //   id: {
+  //     id: generateRandomID(4, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+  //     email: "lighthouseguy@gmail.com",
+  //     password: "lighthouselabs",
+  //     newUrls: {}
+  // }
 }
 
 //
@@ -61,7 +62,7 @@ app.post("/register", (req, res) => {
   let lengthOfPassword = 10;
   let addUserPassword = bcrypt.hashSync(req.body.password, lengthOfPassword);
   let randomID = (generateRandomID(4, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-  console.log(addUserPassword)
+  // console.log(addUserPassword)
   for (var newUserVar in userDatabase) {
     if (userDatabase[newUserVar].email === req.body.email) {
     // console.log("it matched")
@@ -73,7 +74,7 @@ app.post("/register", (req, res) => {
   } else if (req.body.email === "" || req.body.password === "") {
     res.status(400).send("Email and/or password were left blank")
     } else {
-      req.session.user_id = req.body.email
+      req.session.user_id = randomID
       const newUser = {
         id: randomID,
         email: req.body.email,
@@ -81,7 +82,6 @@ app.post("/register", (req, res) => {
         newUrls: {}
       };
       userDatabase[randomID] = newUser
-      console.log(userDatabase)
       res.redirect("/urls")
     };
 })
@@ -90,15 +90,18 @@ app.post("/register", (req, res) => {
 
 app.get("/urls", (req, res) => {
   let templateVars = {
-    urls: urlDatabase,
-    username: req.session.user_id
-   };
+    username: userDatabase[req.session.user_id].email,
+    urls: userDatabase[req.session.user_id].newUrls
+  }
   res.render("urls_index", templateVars);
 });
 
+
 app.post("/urls/:id/delete", (req, res) => {
   var key = req.params.id
-  delete urlDatabase[key]
+  for (display in userDatabase){
+  delete userDatabase[display].newUrls[key]
+  }
   res.redirect(`/urls`)
 });
 
@@ -111,18 +114,14 @@ app.get("/login", (req, res) => {
 
 
 app.post("/login", (req, res) => {
-  console.log(userDatabase)
   let userLoginID = req.body.email
   let userLoginPassword = req.body.password
   for(let userID in userDatabase) {
     // when emails match
     if (userDatabase[userID].email === userLoginID) {
-      console.log(userLoginID)
-        console.log(userLoginPassword)
-        console.log(userDatabase[userID].password)
       // when passwords match
       if (bcrypt.compareSync(userLoginPassword, userDatabase[userID].password)) {
-        req.session.user_id = userLoginID
+        req.session.user_id = userDatabase[userID].id
         res.redirect(`/urls`)
         return
       } else {
@@ -150,10 +149,8 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  // console.log(req.body);
-  // console.log(req.session.user_id)
   for (randomUserID in userDatabase) {
-    if(req.session.user_id === userDatabase[randomUserID].email) {
+    if(req.session.user_id === userDatabase[randomUserID].id) {
     // console.log(userDatabase[randomUserID].id)
     userDatabase[randomUserID].newUrls[generateRandomID(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')] = req.body.longURL
     // console.log(userDatabase)
