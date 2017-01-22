@@ -220,12 +220,12 @@ app.post("/urls/:id/update", (req, res) =>{
 
 
 app.get("/u/:shortURL", (req, res) => {
-  if(longURL) {
-  let longURL = userDatabase[req.session.user_id].newUrls[req.params.shortURL]
+  if (!req.session.user_id){
+    res.status(401).send(`Error: User not logged in <br> <br> <a href="/login"> Link to Login </a>`)
+  } else {
+  let longURL = userDatabase[req.session.user_id].newUrls[shortURL]
   res.redirect(longURL);
-} else {
-  res.status(404).send("URL does not exist")
-}
+  }
 });
 
 
@@ -237,8 +237,6 @@ app.get("/", (req, res) => {
         res.redirect(`/login`)
       };
 });
-
-
 
 
 
