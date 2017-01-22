@@ -210,12 +210,10 @@ app.get("/u/:shortURL", (req, res) => {
   if (!req.session.user_id){
     res.status(401).send(`Error: User not logged in <br> <br> <a href="/login"> Link to Login </a>`)
   } else {
-  let longURL = userDatabase[req.session.user_id].newUrls[shortURL]
+  let longURL = userDatabase[req.session.user_id].newUrls[req.params.shortURL]
   res.redirect(longURL);
   }
 });
-
-
 
 app.get("/", (req, res) => {
       if (req.session.user_id) {
@@ -225,20 +223,6 @@ app.get("/", (req, res) => {
       };
 });
 
-
-
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-
-
-// bcrypt.hach(req.body/password, 10, (err, hash)=> {
-//   if (err) {
-//     res.send ("error")
-//     return
-//   }
-// })
-
-// data.users.push()
