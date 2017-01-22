@@ -3,21 +3,18 @@ const cookieSession = require("cookie-session");
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
 
-const PORT = process.env.PORT || 8080; // default port 8080
+const PORT = process.env.PORT || 8080;
 
 const app = express();
 app.use(cookieSession({
   name: "session",
   keys: ["secretkeysinhere"],
-  // options
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}))
+  maxAge: 24 * 60 * 60 * 1000
+}));
 
 app.use(bodyParser.urlencoded({extended: true}));
 
-
 app.set("view engine", "ejs");
-
 
 function generateRandomString() {
    var text = "";
@@ -25,21 +22,15 @@ function generateRandomString() {
    for( var i=0; i < 6; i++ )
        text += possible.charAt(Math.floor(Math.random() * possible.length));
    return text;
-}
+};
 
 function generateRandomID(length, allID) {
   var result = '';
   for (var i = length; i > 0; --i)
     result += allID[Math.floor(Math.random() * allID.length)];
-  return result
-}
-
-var urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+  return result;
 };
 
-// let randomID = generateRandomID(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
 var userDatabase = {
   //   id: {
   //     id: generateRandomID(4, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'),
@@ -47,9 +38,8 @@ var userDatabase = {
   //     password: "lighthouselabs",
   //     newUrls: {}
   // }
-}
+};
 
-//
 
 app.get("/register", (req, res)=> {
   if(req.session.user_id) {
@@ -64,10 +54,8 @@ app.post("/register", (req, res) => {
   let lengthOfPassword = 10;
   let addUserPassword = bcrypt.hashSync(req.body.password, lengthOfPassword);
   let randomID = (generateRandomID(4, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-  // console.log(addUserPassword)
   for (var newUserVar in userDatabase) {
     if (userDatabase[newUserVar].email === req.body.email) {
-    // console.log("it matched")
       userExists = true
     }
   }
@@ -82,13 +70,11 @@ app.post("/register", (req, res) => {
         email: req.body.email,
         password: addUserPassword,
         newUrls: {}
-      };
-      userDatabase[randomID] = newUser
-      res.redirect("/urls")
     };
-})
-
-//
+    userDatabase[randomID] = newUser
+    res.redirect("/urls")
+    }
+});
 
 app.get("/urls", (req, res) => {
   if (req.session.user_id === undefined) {
@@ -99,34 +85,26 @@ app.get("/urls", (req, res) => {
     urls: userDatabase[req.session.user_id].newUrls
   }
   res.status(200).render("urls_index", templateVars);
-  // res.status(200)
   }
 });
-
 
 app.post("/urls/:id/delete", (req, res) => {
   var key = req.params.id
   for (display in userDatabase){
-  delete userDatabase[display].newUrls[key]
+    delete userDatabase[display].newUrls[key]
   }
   res.redirect(`/urls`)
 });
 
-//
-
-
 app.get("/login", (req, res) => {
   res.render("urls_login")
-})
-
+});
 
 app.post("/login", (req, res) => {
   let userLoginID = req.body.email
   let userLoginPassword = req.body.password
   for(let userID in userDatabase) {
-    // when emails match
     if (userDatabase[userID].email === userLoginID) {
-      // when passwords match
       if (bcrypt.compareSync(userLoginPassword, userDatabase[userID].password)) {
         req.session.user_id = userDatabase[userID].id
         res.redirect(`/`)
@@ -139,14 +117,10 @@ app.post("/login", (req, res) => {
     return res.status(403).send("User not found");
 });
 
-//
-
 app.post("/logout", (req, res) =>{
   req.session = null
   res.redirect("/")
 });
-
-//
 
 app.get("/urls/new", (req, res) => {
   if (req.session.user_id === undefined) {
@@ -163,10 +137,9 @@ app.post("/urls", (req, res) => {
     let agony = "/urls/" + shortURL
     res.redirect(agony);
   } else {
-      res.status(401).send(`Error: User not logged in <br> <br> <a href="/login"> Link to Login </a>`)
+    res.status(401).send(`Error: User not logged in <br> <br> <a href="/login"> Link to Login </a>`)
   }
 });
-
 
 app.get("/urls/:id", (req, res) => {
   console.log(userDatabase)
@@ -200,11 +173,6 @@ app.post("/urls/:id/update", (req, res) =>{
     res.redirect(`/urls`);
   }
 });
-
-
-
-//
-
 
 app.get("/u/:shortURL", (req, res) => {
   if (!req.session.user_id){
