@@ -156,30 +156,17 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
-//second registered user is logged out when creating a link
-
 app.post("/urls", (req, res) => {
-  for (randomUserID in userDatabase) {
-    if(req.session.user_id === userDatabase[randomUserID].id) {
+  if(userDatabase[req.session.user_id]) {
     let shortURL = generateRandomString()
-    userDatabase[randomUserID].newUrls[shortURL]
-    userDatabase[randomUserID].newUrls[shortURL] = req.body.longURL
+    userDatabase[req.session.user_id].newUrls[shortURL] = req.body.longURL
     let agony = "/urls/" + shortURL
     res.redirect(agony);
-    // userDatabase[randomUserID].newUrls
-    } else {
+  } else {
       res.status(401).send(`Error: User not logged in <br> <br> <a href="/login"> Link to Login </a>`)
-    };
   }
 });
 
-
-
-app.get("/colin", (req, res) => {
-  let eureka = "http://google.com";
-  res.redirect(eureka)
-})
-//
 
 app.get("/urls/:id", (req, res) => {
   console.log(userDatabase)
