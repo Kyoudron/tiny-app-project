@@ -2,9 +2,6 @@ const express = require("express");
 const cookieSession = require("cookie-session");
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
-// const password = "purple-monkey-dinosaur"; // you will probably this from req.params
-// const hashed_password = bcrypt.hashSync(password, 10);
-
 
 const PORT = process.env.PORT || 8080; // default port 8080
 
@@ -55,7 +52,11 @@ var userDatabase = {
 //
 
 app.get("/register", (req, res)=> {
-  res.render("register")
+  if(req.session.user_id) {
+    res.redirect("/")
+  } else {
+  res.status(200).render("register")
+  }
 });
 
 app.post("/register", (req, res) => {
@@ -90,11 +91,16 @@ app.post("/register", (req, res) => {
 //
 
 app.get("/urls", (req, res) => {
+  if (req.session.user_id === undefined) {
+    res.status(401).send(`Error: User not logged in <br> <br> <a href="/login"> Link to Login </a>`)
+  } else {
   let templateVars = {
     username: userDatabase[req.session.user_id].email,
     urls: userDatabase[req.session.user_id].newUrls
   }
-  res.render("urls_index", templateVars);
+  res.status(200).render("urls_index", templateVars);
+  // res.status(200)
+  }
 });
 
 
@@ -123,10 +129,10 @@ app.post("/login", (req, res) => {
       // when passwords match
       if (bcrypt.compareSync(userLoginPassword, userDatabase[userID].password)) {
         req.session.user_id = userDatabase[userID].id
-        res.redirect(`/urls`)
+        res.redirect(`/`)
         return
       } else {
-        return res.status(403).send("Not the right password!")
+        res.status(401).send("The email and password put in do not match.")
       }
     }
   }
@@ -137,44 +143,75 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) =>{
   req.session = null
-  res.redirect("/login")
+  res.redirect("/")
 });
 
 //
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  if (req.session.user_id === undefined) {
+    res.status(401).send(`Error: User not logged in <br> <br> <a href="/login"> Link to Login </a>`)
+  } else {
+  res.status(200).render("urls_new");
+  }
 });
+
+//second registered user is logged out when creating a link
 
 app.post("/urls", (req, res) => {
   for (randomUserID in userDatabase) {
     if(req.session.user_id === userDatabase[randomUserID].id) {
-    // console.log(userDatabase[randomUserID].id)
     let shortURL = generateRandomString()
     userDatabase[randomUserID].newUrls[shortURL]
     userDatabase[randomUserID].newUrls[shortURL] = req.body.longURL
+    let agony = "/urls/" + shortURL
+    res.redirect(agony);
     // userDatabase[randomUserID].newUrls
-    }
+    } else {
+      res.status(401).send(`Error: User not logged in <br> <br> <a href="/login"> Link to Login </a>`)
+    };
   }
-  res.redirect(`/urls`);
 });
 
+
+
+app.get("/colin", (req, res) => {
+  let eureka = "http://google.com";
+  res.redirect(eureka)
+})
 //
 
 app.get("/urls/:id", (req, res) => {
+  console.log(userDatabase)
+  if (!req.params.id) {
+    res.status(404).send(`URL does not exist`)
+  } if (req.session.user_id === undefined) {
+    res.status(401).send(`Error: User not logged in <br> <br> <a href="/login"> Link to Login </a>`)
+  } if (userDatabase[req.session.user_id].newUrls[req.params.id] === undefined) {
+    res.status(403).send(`URL does not match with the right user`)
+  } else {
   let templateVars = {
     shortURL: req.params.id,
-    longURL: userDatabase[req.session.user_id].newUrls[shortURL],
+    longURL: userDatabase[req.session.user_id].newUrls[req.params.id],
     username: req.session.user_id
-  };
+  }
   res.render("urls_show", templateVars);
+  };
 });
 
 app.post("/urls/:id/update", (req, res) =>{
-  var shortURL = req.params.id
-  var longURL = req.body.longURL
-  userDatabase[req.session.user_id].newUrls[shortURL] = longURL;
-  res.redirect(`/urls`);
+  if (!userDatabase[req.session.user_id].newUrls[req.params.id]) {
+    res.status(404).send("This ShortURL does not exist!")
+  } if  (req.session.user_id === undefined) {
+    res.status(401).send(`Error: User not logged in <br> <br> <a href="/login"> Link to Login </a>`)
+  } if (userDatabase[req.session.user_id].newUrls[req.params.id] === undefined) {
+    res.status(403).send(`URL does not match with the right user`)
+  } else {
+    var shortURL = req.params.id
+    var longURL = req.body.longURL
+    userDatabase[req.session.user_id].newUrls[shortURL] = longURL;
+    res.redirect(`/urls`);
+  }
 });
 
 
@@ -183,15 +220,28 @@ app.post("/urls/:id/update", (req, res) =>{
 
 
 app.get("/u/:shortURL", (req, res) => {
+  if(longURL) {
   let longURL = userDatabase[req.session.user_id].newUrls[req.params.shortURL]
   res.redirect(longURL);
+} else {
+  res.status(404).send("URL does not exist")
+}
 });
 
 
 
 app.get("/", (req, res) => {
-  res.end("Hello!");
+      if (req.session.user_id) {
+        res.redirect(`/urls`)
+      } else {
+        res.redirect(`/login`)
+      };
 });
+
+
+
+
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);

@@ -11,6 +11,13 @@
         <strong for="longURL">Enter Website Here!</strong>
         <input id="longURL" type="text" name="longURL" placeholder="<%= `${longURL}`%>"" style="width: 300px">
         <input type="submit" value="Update">
+      </form>
+
+      <form action="/urls/<%=shortURL%>/delete" method="POST">
+        <strong for="longURL">Would you like to Delete?:</strong>
+        <input type="submit" value="Delete">
+      </form>
+
   </ul>
 </body>
 </html>
